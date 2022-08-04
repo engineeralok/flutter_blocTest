@@ -2,24 +2,21 @@ import 'dart:async';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloctest/bloc/internet_bloc/internet_event.dart';
-import 'package:flutter_bloctest/bloc/internet_bloc/internet_state.dart';
 
-class InternetBloc extends Bloc<InternetEvent, InternetState> {
+enum InternetState { initial, lost, connected }
+
+class InternetCubit extends Cubit<InternetState> {
   final Connectivity _connectivity = Connectivity();
   StreamSubscription? connectivitySubscription;
 
-  InternetBloc() : super(InternetInitialState()) {
-    on<InternetLostEvent>((event, emit) => emit(InternetLostState()));
-    on<InternetConnectedEvent>((event, emit) => emit(InternetConnectedState()));
-
+  InternetCubit() : super(InternetState.initial) {
     connectivitySubscription =
         _connectivity.onConnectivityChanged.listen((result) {
       if (result == ConnectivityResult.mobile ||
           result == ConnectivityResult.wifi) {
-        add(InternetConnectedEvent());
+        emit(InternetState.connected);
       } else {
-        add(InternetLostEvent());
+        emit(InternetState.lost);
       }
     });
   }
